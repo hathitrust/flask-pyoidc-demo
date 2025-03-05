@@ -31,14 +31,18 @@ auth = OIDCAuthentication({'default': provider_config}, app)
 
 @contextmanager
 def users_json():
-    with open('users.json','r') as file:
-        userinfo = json.load(file)
     try:
+        with open('users.json','r') as file:
+            userinfo = json.load(file)
+        if 'users' not in userinfo:
+            userinfo['users'] = {}
+        if 'registrations' not in userinfo:
+            userinfo['registrations'] = {}
         yield userinfo
-    finally:
         with open('users.json','w') as file:
-            json.dump(userinfo,file)
-
+            json.dump(userinfo,file,indent=2)
+    finally:
+        pass
 
 @app.route('/onboard')
 # TODO only logged-in 'superusers' should be able to use this route
@@ -48,9 +52,7 @@ def onboard():
         email = request.args.get('email')
         reg_key = secrets.token_urlsafe(30)
 
-        userinfo[email] = {
-            'reg_key': reg_key
-        }
+        userinfo['registrations'][email] = reg_key
 
     return jsonify({'registration_url': f"http://127.0.0.1:5555/register?email={email}&reg_key={reg_key}"})
 
@@ -63,9 +65,10 @@ def register():
 
     # does reg key param match? if so save sub
     with users_json() as userinfo:
-        if reg_key and email and 'reg_key' in userinfo[email] and userinfo[email]['reg_key'] == reg_key:
-            userinfo[email] = user_session.userinfo
-            return jsonify(user_session.userinfo)
+        if reg_key and email and email in userinfo['registrations'] and userinfo['registrations'][email] == reg_key:
+            userinfo['users'][user_session.id_token['sub']] = email
+            userinfo['registrations'].pop(email)
+            return jsonify(user_session.id_token)
         else:
             flask.abort(401)
 
@@ -73,11 +76,14 @@ def register():
 @auth.oidc_auth('default')
 def index():
     user_session = UserSession(flask.session)
+    with open('users.json','r') as file:
+        userinfo = json.load(file)
 
-    # todo look up user
-    return jsonify(access_token=user_session.access_token,
-                   id_token=user_session.id_token,
-                   userinfo=user_session.userinfo)
+    sub = user_session.id_token['sub']
+    if(sub in userinfo['users']):
+        return jsonify({ "email": userinfo['users'][sub], "id_token": user_session.id_token})
+    else:
+        flask.abort(401)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

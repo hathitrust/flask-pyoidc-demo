@@ -27,5 +27,6 @@ Then:
 Needless to say, this is a toy example that should not be used directly in
 production. To be production-ready, it should at the least:
 
+* limit who can access /onboard
 * use a real back-end for user information
 * encrypt the registration keys in that back end

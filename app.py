@@ -45,7 +45,8 @@ def users_json():
         pass
 
 @app.route('/onboard')
-# TODO only logged-in 'superusers' should be able to use this route
+# For "real" use, this route should also authenticate
+# and limit who can access it
 def onboard():
     with users_json() as userinfo:
 

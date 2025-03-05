@@ -9,6 +9,12 @@ pip install -r requirements.txt
 python app.py
 ```
 
+Then:
+
+* copy `env-example` to `.env`
+* add your OIDC issuer, client ID and secret key
+* generate a secret key for sessions
+
 ## Registration Example
 
 * Go to 127.0.0.1:5555/onboard?email=somebody@default.invalid

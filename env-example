@@ -1,0 +1,5 @@
+# there should exist OIDC_ISSUER/.well-known/openid-configuration
+OIDC_ISSUER=https://default.example/dex
+OIDC_CLIENT_ID=example-client
+OIDC_CLIENT_SECRET=example-client-secret
+FLASK_SECRET_KEY=generate-something-randomly

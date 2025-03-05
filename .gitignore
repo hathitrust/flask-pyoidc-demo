@@ -1,0 +1,9 @@
+# virtualenv stuff etc
+.env
+__pycache__
+bin
+lib/python3.*
+lib64
+include
+pyvenv.cfg
+users.json
